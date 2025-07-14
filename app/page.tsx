@@ -26,30 +26,25 @@ function PushNotificationManager() {
   }
 
   const sendNotification = async () => {
-    try {
-      const response = await fetch("/send-notification", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message }),
-      });
+    const res = await fetch("/api/send-notification", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        externalId: "7f4baab5-0c91-44e8-8b58-5ff849535174",
+        message,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Notification sent:", data);
-    } catch (error) {
-      console.error("Error sending notification:", error);
-    }
+    const data = await res.json();
+    console.log(data);
   };
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-md mx-auto mt-8">
       <h2 className="text-2xl font-semibold text-center mb-6">
-        MagicBell Web Push Notifications React Demo
+        MagicBell Web Push Notifications React Example
       </h2>
       <input
         type="text"
@@ -82,6 +77,7 @@ function InstallPrompt() {
 
   useEffect(() => {
     setIsIOS(
+      // @todo: fix
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
     );
@@ -96,19 +92,23 @@ function InstallPrompt() {
   return (
     <div>
       {isIOS && (
-        <p>
-          To install this app on your iOS device, tap the share button
-          <span role="img" aria-label="share icon">
-            {" "}
-            ⎋{" "}
-          </span>
-          and then &quot;Add to Home Screen&ldquo;
-          <span role="img" aria-label="plus icon">
-            {" "}
-            ➕{" "}
-          </span>
-          .
-        </p>
+        <>
+          <h3>Install App</h3>
+          <button>Add to Home Screen</button>
+          <p>
+            To install this app on your iOS device, tap the share button
+            <span role="img" aria-label="share icon">
+              {" "}
+              ⎋{" "}
+            </span>
+            and then &quot;Add to Home Screen&quot;
+            <span role="img" aria-label="plus icon">
+              {" "}
+              ➕{" "}
+            </span>
+            .
+          </p>
+        </>
       )}
     </div>
   );
@@ -116,11 +116,9 @@ function InstallPrompt() {
 
 export default function Page() {
   return (
-    <div className="max-w-3xl mx-auto mt-16">
-      <div className="mx-auto">
-        <PushNotificationManager />
-        <InstallPrompt />
-      </div>
+    <div>
+      <PushNotificationManager />
+      <InstallPrompt />
     </div>
   );
 }

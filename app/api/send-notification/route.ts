@@ -9,14 +9,14 @@ export async function POST(request: Request) {
       token: process.env.MAGICBELL_PROJECT_TOKEN,
     });
 
-    const { message } = await request.json();
+    const { externalId, message } = await request.json();
 
     const { data } = await client.broadcasts.createBroadcast({
       title: "Test Notification",
       content: message,
       recipients: [
         {
-          externalId: "7f4baab5-0c91-44e8-8b58-5ff849535174",
+          externalId,
         },
       ],
     });
