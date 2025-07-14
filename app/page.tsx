@@ -5,6 +5,7 @@ import WebPushButton from "@magicbell/react/webpush-button";
 
 function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if ("serviceWorker" in navigator && "PushManager" in window) {
@@ -32,7 +33,7 @@ function PushNotificationManager() {
       },
       body: JSON.stringify({
         externalId: "7f4baab5-0c91-44e8-8b58-5ff849535174",
-        message: "Hello from frontend!",
+        message,
       }),
     });
 
@@ -45,6 +46,13 @@ function PushNotificationManager() {
       <h2 className="text-2xl font-semibold text-center mb-6">
         MagicBell Web Push Notifications React Example
       </h2>
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Notification message"
+        className="bg-gray-800 text-white border border-gray-600 rounded-md px-4 py-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+      />
       <div className="flex items-center gap-2">
         <WebPushButton
           renderLabel={({ status, error }) =>
