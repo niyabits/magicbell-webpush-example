@@ -1,27 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { subscribeUser, unsubscribeUser, sendNotification } from "./actions";
 import WebPushButton from "@magicbell/react/webpush-button";
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
 
 function PushNotificationManager() {
   const [isSupported, setIsSupported] = useState(false);
-  const [subscription, setSubscription] = useState<PushSubscription | null>(
-    null
-  );
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -32,70 +15,63 @@ function PushNotificationManager() {
   }, []);
 
   async function registerServiceWorker() {
-    const registration = await navigator.serviceWorker.register("/sw.js", {
+    await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
       updateViaCache: "none",
     });
-    const sub = await registration.pushManager.getSubscription();
-    setSubscription(sub);
-  }
-
-  async function subscribeToPush() {
-    const registration = await navigator.serviceWorker.ready;
-    const sub = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!
-      ),
-    });
-    setSubscription(sub);
-    const serializedSub = JSON.parse(JSON.stringify(sub));
-    await subscribeUser(serializedSub);
-  }
-
-  async function unsubscribeFromPush() {
-    await subscription?.unsubscribe();
-    setSubscription(null);
-    await unsubscribeUser();
-  }
-
-  async function sendTestNotification() {
-    if (subscription) {
-      await sendNotification(message);
-      setMessage("");
-    }
   }
 
   if (!isSupported) {
     return <p>Push notifications are not supported in this browser.</p>;
   }
 
+  const sendNotification = async () => {
+    try {
+      const response = await fetch("https://localhost:3000/send-notification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Notification sent:", data);
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+
   return (
-    <div>
-      <h3>Push Notifications</h3>
-      <WebPushButton
-        renderLabel={({ status, error }) =>
-          error || (status === "success" ? "disable" : "enable")
-        }
+    <div className="max-w-md mx-auto">
+      <h2 className="text-2xl font-semibold text-center mb-6">
+        MagicBell Web Push Notifications React Demo
+      </h2>
+      <input
+        type="text"
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="Notification message"
+        className="bg-gray-800 text-white border border-gray-600 rounded-md px-4 py-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
       />
-      {subscription ? (
-        <>
-          <p>You are subscribed to push notifications.</p>
-          <button onClick={unsubscribeFromPush}>Unsubscribe</button>
-          <input
-            type="text"
-            placeholder="Enter notification message"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-          />
-          <button onClick={sendTestNotification}>Send Test</button>
-        </>
-      ) : (
-        <>
-          <p>You are not subscribed to push notifications.</p>
-          <button onClick={subscribeToPush}>Subscribe</button>
-        </>
-      )}
+      <div className="flex items-center gap-2">
+        <WebPushButton
+          renderLabel={({ status, error }) =>
+            error || (status === "success" ? "Unsubscribe" : "Subscribe")
+          }
+          className="bg-[#FFB224] hover:bg-[#FFBF48] transition text-black px-4 py-2 rounded w-full"
+        />
+        <button
+          onClick={sendNotification}
+          className="bg-[#6E56CF] hover:bg-[#836ED6] transition text-white px-4 py-2 rounded w-full"
+        >
+          Send Test Notification
+        </button>
+      </div>
     </div>
   );
 }
@@ -118,8 +94,6 @@ function InstallPrompt() {
 
   return (
     <div>
-      <h3>Install App</h3>
-      <button>Add to Home Screen</button>
       {isIOS && (
         <p>
           To install this app on your iOS device, tap the share button
@@ -141,9 +115,11 @@ function InstallPrompt() {
 
 export default function Page() {
   return (
-    <div>
-      <PushNotificationManager />
-      <InstallPrompt />
+    <div className="max-w-3xl mx-auto mt-16">
+      <div className="mx-auto">
+        <PushNotificationManager />
+        <InstallPrompt />
+      </div>
     </div>
   );
 }
