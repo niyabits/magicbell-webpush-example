@@ -1,3 +1,5 @@
+"use client";
+
 import type { Metadata } from "next";
 import Provider from "@magicbell/react/context-provider";
 import { Geist, Geist_Mono } from "next/font/google";
