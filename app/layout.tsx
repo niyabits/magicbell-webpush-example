@@ -1,9 +1,9 @@
-"use client";
-
 import type { Metadata } from "next";
 import Provider from "@magicbell/react/context-provider";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import jwt from "jsonwebtoken";
+import { loadEnvConfig } from "@next/env";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,21 +25,27 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let token = null;
+  loadEnvConfig(process.cwd());
 
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:3000"}/user`
-    );
-    if (response.ok) {
-      token = await response.json();
-    }
-  } catch (error) {
-    console.error("Failed to fetch user token:", error);
+  const secret = process.env.MAGICBELL_SECRET_KEY;
+  const payload = {
+    user_email: "niya@magicbell.io",
+    user_external_id: "7f4baab5-0c91-44e8-8b58-5ff849535174",
+    api_key: process.env.MAGICBELL_API_KEY,
+  };
+
+  if (secret === undefined) {
+    console.error("Secret key is undefined.");
+    return;
   }
 
+  const token = jwt.sign(payload, secret, {
+    algorithm: "HS256",
+    expiresIn: "1y",
+  });
+
   return (
-    <Provider token={token ? JSON.parse(token) : null}>
+    <Provider token={token}>
       <html lang="en">
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
