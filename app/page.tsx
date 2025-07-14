@@ -27,7 +27,7 @@ function PushNotificationManager() {
 
   const sendNotification = async () => {
     try {
-      const response = await fetch("https://localhost:3000/send-notification", {
+      const response = await fetch("/send-notification", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -82,6 +82,7 @@ function InstallPrompt() {
 
   useEffect(() => {
     setIsIOS(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
     );
 
@@ -101,7 +102,7 @@ function InstallPrompt() {
             {" "}
             ⎋{" "}
           </span>
-          and then "Add to Home Screen"
+          and then &quot;Add to Home Screen&ldquo;
           <span role="img" aria-label="plus icon">
             {" "}
             ➕{" "}

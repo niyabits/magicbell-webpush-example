@@ -1,5 +1,4 @@
 import { Client } from "magicbell-js/project-client";
-import jwt from "jsonwebtoken";
 import { loadEnvConfig } from "@next/env";
 
 export async function POST(request: Request) {

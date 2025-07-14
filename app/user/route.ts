@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { loadEnvConfig } from "@next/env";
 
-export function GET(request: Request) {
+export function GET() {
   loadEnvConfig(process.cwd());
 
   const secret = process.env.MAGICBELL_SECRET_KEY;
